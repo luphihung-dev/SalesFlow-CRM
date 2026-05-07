@@ -28,6 +28,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataInitializer implements CommandLineRunner {
 
+    private static final BigDecimal MANAGER_APPROVAL_THRESHOLD = new BigDecimal("50000.00");
+
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final DealRepository dealRepository;
@@ -65,59 +67,65 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        Team enterpriseTeam = teamRepository.findByName("Enterprise Sales")
-                .orElseGet(() -> createTeam("Enterprise Sales", "Handles larger accounts, approvals, and multi-stakeholder opportunities."));
-        Team growthTeam = teamRepository.findByName("Growth Sales")
-                .orElseGet(() -> createTeam("Growth Sales", "Handles SMB customers, pilots, and fast-cycle opportunities."));
+        Team enterpriseTeam = ensureTeam("Enterprise Sales", "Strategic accounts with larger contracts, approvals, and multi-stakeholder buying groups.");
+        Team growthTeam = ensureTeam("Growth Sales", "SMB and mid-market customers with fast-cycle pilots, renewals, and expansion opportunities.");
 
-        User admin = userRepository.findByEmail(adminEmail).orElseGet(() -> createUser(adminName, adminEmail, adminPassword, UserRole.ADMIN, null));
-        User sales = userRepository.findByEmail("sales@crm.local").orElseGet(() -> createUser("Mia Sales", "sales@crm.local", "Sales12345", UserRole.SALES, growthTeam));
-        User manager = userRepository.findByEmail("manager@crm.local").orElseGet(() -> createUser("Linh Manager", "manager@crm.local", "Manager12345", UserRole.MANAGER, growthTeam));
-        assignTeamIfMissing(sales, growthTeam);
-        assignTeamIfMissing(manager, growthTeam);
+        User admin = ensureUser(adminName, adminEmail, adminPassword, UserRole.ADMIN, null);
+        User sales = ensureUser("Mia Tran", "sales@crm.local", "Sales12345", UserRole.SALES, growthTeam);
+        User manager = ensureUser("Linh Nguyen", "manager@crm.local", "Manager12345", UserRole.MANAGER, growthTeam);
+        User enterpriseRep = ensureUser("Ava Chen", "enterprise@crm.local", "Enterprise12345", UserRole.SALES, enterpriseTeam);
 
         if (customerRepository.count() > 0) {
             assignMissingCustomerTeams(growthTeam);
-            return;
         }
 
-        Customer saigonRetail = createCustomer("Saigon Retail Group", "procurement@saigonretail.test", "+84 901 234 567", CustomerCountry.VN, "Saigon Retail", CustomerStatus.ACTIVE, growthTeam);
-        Customer lotusClinic = createCustomer("Lotus Care Clinic", "ops@lotuscare.test", "+84 987 654 321", CustomerCountry.VN, "Lotus Care", CustomerStatus.PROSPECT, growthTeam);
-        Customer sakuraFoods = createCustomer("Sakura Foods Japan", "partnership@sakurafoods.test", "+81 90 1234 5678", CustomerCountry.JP, "Sakura Foods", CustomerStatus.ACTIVE, growthTeam);
-        Customer pacificLogistics = createCustomer("Pacific Logistics", "logistics@pacific.test", "+1 415 555 0198", CustomerCountry.US, "Pacific Logistics", CustomerStatus.ACTIVE, growthTeam);
-        Customer mekongEdu = createCustomer("Mekong Edu Platform", "hello@mekongedu.test", "+84 912 345 678", CustomerCountry.VN, "Mekong Edu", CustomerStatus.INACTIVE, enterpriseTeam);
+        Customer saigonRetail = ensureCustomer("Cedar Retail Group", "procurement@saigonretail.test", "+84 901 234 567", CustomerCountry.VN, "Cedar Retail", CustomerStatus.ACTIVE, growthTeam);
+        Customer lotusClinic = ensureCustomer("Lotus Care Clinics", "ops@lotuscare.test", "+84 987 654 321", CustomerCountry.VN, "Lotus Care", CustomerStatus.PROSPECT, growthTeam);
+        Customer sakuraFoods = ensureCustomer("Sakura Foods Japan", "partnership@sakurafoods.test", "+81 90 1234 5678", CustomerCountry.JP, "Sakura Foods", CustomerStatus.ACTIVE, enterpriseTeam);
+        Customer pacificLogistics = ensureCustomer("Pacific Logistics", "logistics@pacific.test", "+1 415 555 0198", CustomerCountry.US, "Pacific Logistics", CustomerStatus.ACTIVE, growthTeam);
+        Customer mekongEdu = ensureCustomer("Mekong Learning Platform", "hello@mekongedu.test", "+84 912 345 678", CustomerCountry.VN, "Mekong Learning", CustomerStatus.INACTIVE, enterpriseTeam);
+        Customer northstarSaas = ensureCustomer("Northstar SaaS", "revenue@northstar.test", "+1 212 555 0148", CustomerCountry.US, "Northstar SaaS", CustomerStatus.ACTIVE, growthTeam);
+        Customer auroraHotels = ensureCustomer("Aurora Hotel Group", "guestops@aurorahotels.test", "+84 908 456 222", CustomerCountry.VN, "Aurora Hotels", CustomerStatus.PROSPECT, growthTeam);
 
-        createDeal("Retail CRM onboarding", new BigDecimal("18500.00"), DealStage.QUALIFIED, saigonRetail, sales);
-        createDeal("Healthcare follow-up workflow", new BigDecimal("7600.00"), DealStage.CONTACTED, lotusClinic, sales);
-        createDeal("Japan expansion support", new BigDecimal("64000.00"), DealStage.NEW, sakuraFoods, manager);
-        createDeal("Logistics service renewal", new BigDecimal("28500.00"), DealStage.CLOSED, pacificLogistics, manager);
-        createDeal("Education pilot package", new BigDecimal("4200.00"), DealStage.NEW, mekongEdu, admin);
+        ensureDeal("Retail CRM onboarding", new BigDecimal("18500.00"), DealStage.QUALIFIED, saigonRetail, sales);
+        ensureDeal("Healthcare follow-up workflow", new BigDecimal("7600.00"), DealStage.CONTACTED, lotusClinic, sales);
+        ensureDeal("Japan distributor expansion", new BigDecimal("64000.00"), DealStage.NEW, sakuraFoods, enterpriseRep);
+        ensureDeal("Logistics service renewal", new BigDecimal("28500.00"), DealStage.CLOSED, pacificLogistics, manager);
+        ensureDeal("Education pilot package", new BigDecimal("4200.00"), DealStage.NEW, mekongEdu, enterpriseRep);
+        ensureDeal("Customer success dashboard add-on", new BigDecimal("12800.00"), DealStage.QUALIFIED, northstarSaas, sales);
+        ensureDeal("Hotel group service desk pilot", new BigDecimal("9800.00"), DealStage.CONTACTED, auroraHotels, sales);
 
-        createTask("Call buyer team about rollout timeline", LocalDate.now().plusDays(1), TaskStatus.TODO, sales, saigonRetail);
-        createTask("Prepare healthcare workflow proposal", LocalDate.now().plusDays(3), TaskStatus.TODO, sales, lotusClinic);
-        createTask("Review enterprise approval package", LocalDate.now().plusDays(2), TaskStatus.TODO, manager, sakuraFoods);
-        createTask("Send renewal summary email", LocalDate.now().minusDays(1), TaskStatus.TODO, sales, pacificLogistics);
-        createTask("Archive inactive education pilot notes", LocalDate.now().plusDays(5), TaskStatus.DONE, admin, mekongEdu);
+        ensureTask("Confirm store rollout timeline with operations lead", LocalDate.now().plusDays(1), TaskStatus.TODO, sales, saigonRetail);
+        ensureTask("Send clinic follow-up workflow proposal", LocalDate.now().plusDays(3), TaskStatus.TODO, sales, lotusClinic);
+        ensureTask("Prepare manager approval brief for Japan expansion", LocalDate.now().plusDays(2), TaskStatus.TODO, manager, sakuraFoods);
+        ensureTask("Send renewal summary email to logistics director", LocalDate.now().minusDays(1), TaskStatus.TODO, manager, pacificLogistics);
+        ensureTask("Archive inactive education pilot notes", LocalDate.now().plusDays(5), TaskStatus.DONE, enterpriseRep, mekongEdu);
+        ensureTask("Map customer health KPIs for SaaS expansion", LocalDate.now().plusDays(4), TaskStatus.TODO, sales, northstarSaas);
+        ensureTask("Book discovery call with regional hotel managers", LocalDate.now().plusDays(2), TaskStatus.TODO, sales, auroraHotels);
 
-        createActivity(ActivityType.CALL, "Discovery call completed with buying committee. Team is evaluating CRM automation for branch managers.", saigonRetail);
-        createActivity(ActivityType.EMAIL, "Sent proposal summary and implementation checklist for healthcare follow-up workflows.", lotusClinic);
-        createActivity(ActivityType.NOTE, "Enterprise opportunity identified. Manager approval is required before final quote.", sakuraFoods);
-        createActivity(ActivityType.NOTE, "Renewal closed after operations team confirmed service continuity requirements.", pacificLogistics);
-        createActivity(ActivityType.EMAIL, "Sent pilot wrap-up note and marked account inactive until next semester budget review.", mekongEdu);
+        ensureActivity(ActivityType.CALL, "Discovery call completed with retail operations and finance. Buying team wants branch-level follow-up automation before rollout.", saigonRetail);
+        ensureActivity(ActivityType.EMAIL, "Sent proposal summary, implementation checklist, and next-step questions for clinic patient follow-up workflows.", lotusClinic);
+        ensureActivity(ActivityType.NOTE, "Enterprise expansion involves Japan regional distributors. Deal amount requires manager approval before final quote.", sakuraFoods);
+        ensureActivity(ActivityType.NOTE, "Renewal closed after operations confirmed service continuity requirements for the next quarter.", pacificLogistics);
+        ensureActivity(ActivityType.EMAIL, "Sent pilot wrap-up note and marked the education account inactive until next semester budget review.", mekongEdu);
+        ensureActivity(ActivityType.CALL, "Customer success team requested dashboard add-on pricing tied to renewal risk and account health reporting.", northstarSaas);
+        ensureActivity(ActivityType.NOTE, "Hotel group is evaluating a lightweight service desk workflow for guest operations across three properties.", auroraHotels);
     }
 
-    private Team createTeam(String name, String description) {
-        Team team = new Team();
+    private Team ensureTeam(String name, String description) {
+        Team team = teamRepository.findByName(name).orElseGet(Team::new);
         team.setName(name);
         team.setDescription(description);
         return teamRepository.save(team);
     }
 
-    private User createUser(String name, String email, String password, UserRole role, Team team) {
-        User user = new User();
+    private User ensureUser(String name, String email, String password, UserRole role, Team team) {
+        User user = userRepository.findByEmail(email).orElseGet(User::new);
         user.setName(name);
         user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
         user.setRole(role);
         user.setTeam(team);
         return userRepository.save(user);
@@ -139,8 +147,8 @@ public class DataInitializer implements CommandLineRunner {
                 });
     }
 
-    private Customer createCustomer(String name, String email, String phone, CustomerCountry country, String company, CustomerStatus status, Team team) {
-        Customer customer = new Customer();
+    private Customer ensureCustomer(String name, String email, String phone, CustomerCountry country, String company, CustomerStatus status, Team team) {
+        Customer customer = customerRepository.findByEmail(email).orElseGet(Customer::new);
         customer.setName(name);
         customer.setEmail(email);
         customer.setPhone(phone);
@@ -151,18 +159,19 @@ public class DataInitializer implements CommandLineRunner {
         return customerRepository.save(customer);
     }
 
-    private void createDeal(String name, BigDecimal amount, DealStage stage, Customer customer, User owner) {
-        Deal deal = new Deal();
+    private void ensureDeal(String name, BigDecimal amount, DealStage stage, Customer customer, User owner) {
+        Deal deal = dealRepository.findByNameAndCustomerId(name, customer.getId()).orElseGet(Deal::new);
         deal.setName(name);
         deal.setAmount(amount);
         deal.setStage(stage);
+        deal.setRequiresManagerApproval(amount.compareTo(MANAGER_APPROVAL_THRESHOLD) > 0);
         deal.setCustomer(customer);
         deal.setOwner(owner);
         dealRepository.save(deal);
     }
 
-    private void createTask(String title, LocalDate dueDate, TaskStatus status, User user, Customer customer) {
-        Task task = new Task();
+    private void ensureTask(String title, LocalDate dueDate, TaskStatus status, User user, Customer customer) {
+        Task task = taskRepository.findByTitleAndCustomerId(title, customer.getId()).orElseGet(Task::new);
         task.setTitle(title);
         task.setDueDate(dueDate);
         task.setStatus(status);
@@ -171,8 +180,8 @@ public class DataInitializer implements CommandLineRunner {
         taskRepository.save(task);
     }
 
-    private void createActivity(ActivityType type, String description, Customer customer) {
-        Activity activity = new Activity();
+    private void ensureActivity(ActivityType type, String description, Customer customer) {
+        Activity activity = activityRepository.findByDescriptionAndCustomerId(description, customer.getId()).orElseGet(Activity::new);
         activity.setType(type);
         activity.setDescription(description);
         activity.setCustomer(customer);
