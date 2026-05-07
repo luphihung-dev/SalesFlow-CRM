@@ -213,13 +213,13 @@ export default function Topbar({ onMenuClick }) {
               {notifications.length > 0 && <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-clay ring-2 ring-white" />}
             </button>
             {isNotificationsOpen && (
-              <div className="absolute right-0 top-14 z-30 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-ink/10 bg-white shadow-soft">
+              <div className="fixed left-4 right-4 top-28 z-50 max-h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-ink/10 bg-white shadow-soft sm:absolute sm:left-auto sm:right-0 sm:top-14 sm:w-80 sm:max-h-none">
                 <div className="border-b border-ink/5 px-4 py-3">
                   <p className="text-sm font-extrabold text-ink">Notifications</p>
                   <p className="text-xs font-bold text-ink/45">CRM alerts from deals and tasks</p>
                 </div>
                 {notifications.length ? (
-                  <div className="max-h-80 overflow-y-auto">
+                  <div className="max-h-[calc(100vh-14rem)] overflow-y-auto sm:max-h-80">
                     {notifications.map((notification) => (
                       <button
                         className="flex w-full gap-3 px-4 py-3 text-left transition hover:bg-cream"
