@@ -55,29 +55,29 @@ export default function CustomerDetailPage() {
         eyebrow="Customer profile"
         title={state.customer.name}
         description={state.customer.company || 'Individual customer'}
-        action={<div className="flex items-center gap-3"><Badge>{state.customer.status}</Badge><button className="inline-flex items-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => setIsActivityModalOpen(true)} type="button"><Plus size={18} /> Log Activity</button></div>}
+        action={<div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center"><Badge>{state.customer.status}</Badge><button className="inline-flex items-center justify-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => setIsActivityModalOpen(true)} type="button"><Plus size={18} /> Log Activity</button></div>}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
+        <section className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card sm:p-6">
           <div className="grid h-20 w-20 place-items-center rounded-2xl bg-pine font-display text-2xl font-bold text-cream"><UserRound /></div>
           <h2 className="mt-5 font-display text-2xl font-bold text-ink">Profile info</h2>
           <div className="mt-6 space-y-4 text-sm font-semibold text-ink/70">
-            <p className="flex items-center gap-3"><Mail size={18} className="text-moss" /> {state.customer.email}</p>
-            <p className="flex items-center gap-3"><Phone size={18} className="text-moss" /> {state.customer.phone || 'No phone number'}</p>
-            <p className="flex items-center gap-3"><Building2 size={18} className="text-moss" /> {state.customer.teamName || 'Workspace team'}</p>
+            <p className="flex min-w-0 items-center gap-3 break-words"><Mail size={18} className="shrink-0 text-moss" /> {state.customer.email}</p>
+            <p className="flex min-w-0 items-center gap-3 break-words"><Phone size={18} className="shrink-0 text-moss" /> {state.customer.phone || 'No phone number'}</p>
+            <p className="flex min-w-0 items-center gap-3 break-words"><Building2 size={18} className="shrink-0 text-moss" /> {state.customer.teamName || 'Workspace team'}</p>
             <p>Country {state.customer.country || 'VN'}</p>
             <p>Created {formatDate(state.customer.createdAt)}</p>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
+        <section className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card sm:p-6">
           <h2 className="font-display text-2xl font-bold text-ink">Activity timeline</h2>
           <div className="mt-5 space-y-4">
             {customerActivities.length ? customerActivities.map((activity) => (
               <div key={activity.id} className="rounded-xl bg-fog/80 p-4">
-                <div className="flex items-center justify-between gap-3"><Badge>{activity.type}</Badge><span className="text-xs font-bold text-ink/45">{formatDate(activity.createdAt)}</span></div>
+                <div className="flex flex-wrap items-center justify-between gap-3"><Badge>{activity.type}</Badge><span className="text-xs font-bold text-ink/45">{formatDate(activity.createdAt)}</span></div>
                 <p className="mt-3 text-sm font-semibold leading-6 text-ink/70">{activity.description}</p>
               </div>
             )) : <EmptyState title="No activity yet" description="Calls, emails, notes, and automation logs will appear here." />}
@@ -86,13 +86,13 @@ export default function CustomerDetailPage() {
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <section className="rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
+        <section className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card sm:p-6">
           <h2 className="font-display text-2xl font-bold text-ink">Active deals</h2>
-          <div className="mt-5 space-y-3">{customerDeals.length ? customerDeals.map((deal) => <div key={deal.id} className="flex items-center justify-between rounded-xl bg-cream p-4"><div><p className="font-bold text-ink">{deal.name}</p><p className="text-sm font-semibold text-ink/55">{formatCurrency(deal.amount)}</p></div><Badge>{deal.stage}</Badge></div>) : <EmptyState title="No deals" description="Create a deal from the deals page to connect it with this customer." />}</div>
+          <div className="mt-5 space-y-3">{customerDeals.length ? customerDeals.map((deal) => <div key={deal.id} className="flex flex-col gap-3 rounded-xl bg-cream p-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="break-words font-bold text-ink">{deal.name}</p><p className="text-sm font-semibold text-ink/55">{formatCurrency(deal.amount)}</p></div><Badge>{deal.stage}</Badge></div>) : <EmptyState title="No deals" description="Create a deal from the deals page to connect it with this customer." />}</div>
         </section>
-        <section className="rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
+        <section className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card sm:p-6">
           <h2 className="font-display text-2xl font-bold text-ink">Tasks</h2>
-          <div className="mt-5 space-y-3">{customerTasks.length ? customerTasks.map((task) => <div key={task.id} className="flex items-center justify-between rounded-xl bg-cream p-4"><div><p className="font-bold text-ink">{task.title}</p><p className="text-sm font-semibold text-ink/55">Due {formatDate(task.dueDate)}</p></div><Badge>{task.status}</Badge></div>) : <EmptyState title="No tasks" description="Tasks created for this customer will appear here." />}</div>
+          <div className="mt-5 space-y-3">{customerTasks.length ? customerTasks.map((task) => <div key={task.id} className="flex flex-col gap-3 rounded-xl bg-cream p-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="break-words font-bold text-ink">{task.title}</p><p className="text-sm font-semibold text-ink/55">Due {formatDate(task.dueDate)}</p></div><Badge>{task.status}</Badge></div>) : <EmptyState title="No tasks" description="Tasks created for this customer will appear here." />}</div>
         </section>
       </div>
 

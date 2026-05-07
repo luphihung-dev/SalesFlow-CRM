@@ -33,7 +33,7 @@ export default function LoginPage() {
 
   return (
     <main className="grid min-h-screen bg-ink text-cream lg:grid-cols-[1.08fr_0.92fr]">
-      <section className="relative hidden overflow-hidden border-r border-white/10 bg-[linear-gradient(135deg,#17201A_0%,#233425_58%,#2F3C27_100%)] p-12 lg:block">
+      <section className="relative hidden overflow-hidden border-r border-white/10 bg-[linear-gradient(135deg,#17201A_0%,#233425_58%,#2F3C27_100%)] p-10 xl:p-12 lg:block">
         <div className="relative z-10 flex h-full flex-col justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-clay shadow-card">
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
           <div className="max-w-3xl">
             <p className="text-sm font-extrabold uppercase tracking-[0.24em] text-sand/60">Pipeline command center</p>
-            <h1 className="mt-4 font-display text-6xl font-bold leading-[0.95]">Turn customer operations into measurable revenue flow.</h1>
+            <h1 className="mt-4 font-display text-5xl font-bold leading-[0.95] xl:text-6xl">Turn customer operations into measurable revenue flow.</h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-sand/70">
               A focused CRM workspace for account context, pipeline discipline, follow-up ownership, and backend automation visibility.
             </p>
@@ -99,10 +99,19 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <section className="grid place-items-center px-6 py-12">
-        <form onSubmit={handleSubmit} className="w-full max-w-[30rem] rounded-2xl bg-cream p-8 text-ink shadow-soft">
+      <section className="grid place-items-center px-4 py-8 sm:px-6 sm:py-12">
+        <form onSubmit={handleSubmit} className="w-full max-w-[30rem] rounded-2xl bg-cream p-5 text-ink shadow-soft sm:p-8">
+          <div className="mb-8 flex items-center gap-3 lg:hidden">
+            <div className="grid h-11 w-11 place-items-center rounded-xl bg-clay text-cream shadow-card">
+              <BarChart3 size={22} />
+            </div>
+            <div>
+              <p className="font-display text-xl font-bold">Cedar CRM</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-moss">Revenue OS</p>
+            </div>
+          </div>
           <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-moss">Secure workspace</p>
-          <h2 className="mt-2 font-display text-4xl font-bold">Sign in</h2>
+          <h2 className="mt-2 font-display text-3xl font-bold sm:text-4xl">Sign in</h2>
           <p className="mt-3 text-sm leading-6 text-ink/60">
             Access the CRM with role-based permissions, activity history, and automation-backed workflows.
           </p>

@@ -90,7 +90,7 @@ export default function ContactsPage() {
         eyebrow="Contacts"
         title="Customer directory"
         description={canManage ? "Search, filter, create, and jump into customer records with their deal and activity context." : "Search, filter, and view customer records with their deal and activity context."}
-        action={canManage ? <button className="inline-flex items-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => { setEditingCustomer(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Customer</button> : null}
+        action={canManage ? <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft sm:w-auto" onClick={() => { setEditingCustomer(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Customer</button> : null}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
@@ -99,7 +99,7 @@ export default function ContactsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/35" size={18} />
           <input className="h-12 w-full rounded-xl border border-ink/10 bg-white pl-11 pr-4 font-semibold outline-none ring-pine/20 focus:ring-4" placeholder="Search contacts..." value={query} onChange={(event) => setQuery(event.target.value)} />
         </div>
-        <select className="h-12 rounded-xl border border-ink/10 bg-white px-4 font-bold text-ink outline-none" value={status} onChange={(event) => setStatus(event.target.value)}>
+        <select className="h-12 rounded-xl border border-ink/10 bg-white px-4 font-bold text-ink outline-none md:w-52" value={status} onChange={(event) => setStatus(event.target.value)}>
           <option value="ALL">All statuses</option>
           <option value="PROSPECT">Prospect</option>
           <option value="ACTIVE">Active</option>

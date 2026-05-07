@@ -7,7 +7,10 @@ export const authStorage = {
     const value = localStorage.getItem(USER_KEY);
     return value ? JSON.parse(value) : null;
   },
-  setSession: ({ token, tokenType, ...user }) => {
+  setSession: (session) => {
+    const { token } = session;
+    const user = Object.fromEntries(Object.entries(session).filter(([key]) => !['token', 'tokenType'].includes(key)));
+
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     localStorage.setItem('mini-crm-session', JSON.stringify(user));

@@ -1,12 +1,12 @@
 import { Bell, LogOut, Menu, Search } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authStorage } from '../api/auth';
 import { crmApi } from '../api/crmApi';
 import { normalize } from '../utils/formatters';
 import { CRM_SEARCH_REFRESH_EVENT } from '../utils/searchEvents';
 
-export default function Topbar() {
+export default function Topbar({ onMenuClick }) {
   const navigate = useNavigate();
   const user = authStorage.getUser();
   const searchRef = useRef(null);
@@ -27,7 +27,7 @@ export default function Topbar() {
     navigate('/login', { replace: true });
   };
 
-  const loadSearchData = (force = false) => {
+  const loadSearchData = useCallback((force = false) => {
     if (hasLoadedSearchData && !force) return;
     setSearchError('');
     Promise.all([crmApi.customers.list(), crmApi.deals.list(), crmApi.tasks.list()])
@@ -36,7 +36,7 @@ export default function Topbar() {
         setHasLoadedSearchData(true);
       })
       .catch(() => setSearchError('Unable to load search results.'));
-  };
+  }, [hasLoadedSearchData]);
 
   const openNotifications = () => {
     setIsNotificationsOpen((current) => !current);
@@ -64,7 +64,7 @@ export default function Topbar() {
 
     window.addEventListener(CRM_SEARCH_REFRESH_EVENT, handleSearchRefresh);
     return () => window.removeEventListener(CRM_SEARCH_REFRESH_EVENT, handleSearchRefresh);
-  }, [hasLoadedSearchData]);
+  }, [loadSearchData]);
 
   const searchResults = useMemo(() => {
     const search = normalize(query);
@@ -152,62 +152,68 @@ export default function Topbar() {
     }
   };
 
+  const searchBox = (
+    <div className="relative" ref={searchRef}>
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/35" size={18} />
+      <input
+        className="h-12 w-full rounded-xl border border-ink/10 bg-white/90 pl-11 pr-4 text-sm font-semibold text-ink outline-none ring-pine/20 transition placeholder:text-ink/35 focus:ring-4"
+        placeholder="Search customers, deals, tasks..."
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setIsSearchOpen(true);
+          loadSearchData();
+        }}
+        onFocus={() => {
+          setIsSearchOpen(true);
+          loadSearchData();
+        }}
+        onKeyDown={handleSearchKeyDown}
+        type="search"
+      />
+      {isSearchOpen && query.length > 0 && (
+        <div className="absolute left-0 right-0 top-14 z-30 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-soft">
+          {query.length < 2 && <p className="px-4 py-3 text-sm font-bold text-ink/45">Type at least 2 characters.</p>}
+          {query.length >= 2 && searchError && <p className="px-4 py-3 text-sm font-bold text-clay">{searchError}</p>}
+          {query.length >= 2 && !searchError && searchResults.length === 0 && <p className="px-4 py-3 text-sm font-bold text-ink/45">No results found.</p>}
+          {searchResults.map((result) => (
+            <button
+              className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-cream"
+              key={result.id}
+              type="button"
+              onClick={() => selectSearchResult(result)}
+            >
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-extrabold text-ink">{result.title}</span>
+                <span className="block truncate text-xs font-bold text-ink/45">{result.subtitle}</span>
+              </span>
+              <span className="shrink-0 rounded-full bg-pine/10 px-2.5 py-1 text-xs font-extrabold text-pine">{result.type}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <header className="sticky top-0 z-20 border-b border-ink/10 bg-cream/90 px-4 py-4 backdrop-blur-xl sm:px-8">
-      <div className="flex items-center justify-between gap-4">
-        <button className="grid h-11 w-11 place-items-center rounded-xl bg-white text-ink shadow-card lg:hidden" type="button" aria-label="Open menu">
+      <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+        <button className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-ink shadow-card lg:hidden" type="button" onClick={onMenuClick} aria-label="Open menu">
           <Menu size={20} />
         </button>
 
-        <div className="relative hidden max-w-xl flex-1 md:block" ref={searchRef}>
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/35" size={18} />
-          <input
-            className="h-12 w-full rounded-xl border border-ink/10 bg-white/90 pl-11 pr-4 text-sm font-semibold text-ink outline-none ring-pine/20 transition placeholder:text-ink/35 focus:ring-4"
-            placeholder="Search customers, deals, tasks..."
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setIsSearchOpen(true);
-              loadSearchData();
-            }}
-            onFocus={() => {
-              setIsSearchOpen(true);
-              loadSearchData();
-            }}
-            onKeyDown={handleSearchKeyDown}
-            type="search"
-          />
-          {isSearchOpen && query.length > 0 && (
-            <div className="absolute left-0 right-0 top-14 z-30 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-soft">
-              {query.length < 2 && <p className="px-4 py-3 text-sm font-bold text-ink/45">Type at least 2 characters.</p>}
-              {query.length >= 2 && searchError && <p className="px-4 py-3 text-sm font-bold text-clay">{searchError}</p>}
-              {query.length >= 2 && !searchError && searchResults.length === 0 && <p className="px-4 py-3 text-sm font-bold text-ink/45">No results found.</p>}
-              {searchResults.map((result) => (
-                <button
-                  className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-cream"
-                  key={result.id}
-                  type="button"
-                  onClick={() => selectSearchResult(result)}
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-extrabold text-ink">{result.title}</span>
-                    <span className="block truncate text-xs font-bold text-ink/45">{result.subtitle}</span>
-                  </span>
-                  <span className="shrink-0 rounded-full bg-pine/10 px-2.5 py-1 text-xs font-extrabold text-pine">{result.type}</span>
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="order-3 w-full md:order-none md:max-w-xl md:flex-1">
+          {searchBox}
         </div>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           <div className="relative" ref={notificationRef}>
             <button className="relative grid h-11 w-11 place-items-center rounded-xl bg-white text-ink shadow-card transition hover:text-pine" type="button" onClick={openNotifications} aria-label="Notifications">
               <Bell size={18} />
               {notifications.length > 0 && <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-clay ring-2 ring-white" />}
             </button>
             {isNotificationsOpen && (
-              <div className="absolute right-0 top-14 z-30 w-80 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-soft">
+              <div className="absolute right-0 top-14 z-30 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-ink/10 bg-white shadow-soft">
                 <div className="border-b border-ink/5 px-4 py-3">
                   <p className="text-sm font-extrabold text-ink">Notifications</p>
                   <p className="text-xs font-bold text-ink/45">CRM alerts from deals and tasks</p>
@@ -238,7 +244,7 @@ export default function Topbar() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3 rounded-xl bg-white px-3 py-2 shadow-card">
+          <div className="flex min-w-0 items-center gap-3 rounded-xl bg-white px-2 py-2 shadow-card sm:px-3">
             <div className="grid h-9 w-9 place-items-center rounded-xl bg-pine font-display text-sm font-bold text-cream">{user?.name?.slice(0, 2).toUpperCase() || 'SF'}</div>
             <div className="hidden sm:block">
               <p className="text-sm font-extrabold text-ink">{user?.name || 'Sales Flow'}</p>

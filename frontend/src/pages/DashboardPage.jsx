@@ -103,7 +103,7 @@ export default function DashboardPage() {
             <div className="grid gap-px bg-white/10 lg:grid-cols-[1.15fr_2.85fr]">
               <div className="bg-ink p-6">
                 <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-sand/50">Today&apos;s focus</p>
-                <h2 className="mt-2 font-display text-3xl font-bold">Pipeline signals</h2>
+                <h2 className="mt-2 font-display text-2xl font-bold sm:text-3xl">Pipeline signals</h2>
                 <p className="mt-3 max-w-sm text-sm leading-6 text-sand/60">A quick operational view of what should get attention before reviewing charts.</p>
               </div>
               <div className="grid bg-ink/95 sm:grid-cols-2 xl:grid-cols-4">
@@ -114,7 +114,7 @@ export default function DashboardPage() {
                       <span className={`grid h-11 w-11 place-items-center rounded-xl ${item.tone}`}><Icon size={19} /></span>
                       <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.18em] text-sand/50">{item.label}</p>
                       <div className="mt-2 flex items-end gap-2">
-                        <span className="font-display text-4xl font-bold leading-none">{item.value}</span>
+                        <span className="font-display text-3xl font-bold leading-none sm:text-4xl">{item.value}</span>
                         <span className="pb-1 text-xs font-bold text-sand/50">{item.detail}</span>
                       </div>
                     </div>

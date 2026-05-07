@@ -105,11 +105,11 @@ export default function DealsPage() {
         eyebrow="Deals"
         title="Pipeline board"
         description="Create opportunities and move them through the pipeline. High-value deals trigger backend activity automation."
-        action={<button className="inline-flex items-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => { setEditingDeal(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Deal</button>}
+        action={<button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft sm:w-auto" onClick={() => { setEditingDeal(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Deal</button>}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
-      <div className="grid gap-4 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         {dealStages.map((stage) => (
           <section key={stage} className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card">
             <div className="mb-4 flex items-start justify-between gap-3">
@@ -130,9 +130,9 @@ export default function DealsPage() {
                     </div>
                     {deal.requiresManagerApproval && <Badge tone="APPROVAL">Approval</Badge>}
                   </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="font-display text-xl font-bold text-pine">{formatCurrency(deal.amount)}</span>
-                    <span className="max-w-[7rem] truncate text-xs font-extrabold uppercase tracking-[0.14em] text-ink/40">{deal.ownerName}</span>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="break-words font-display text-xl font-bold text-pine">{formatCurrency(deal.amount)}</span>
+                    <span className="min-w-0 break-words text-xs font-extrabold uppercase tracking-[0.14em] text-ink/40 sm:max-w-[7rem] sm:text-right">{deal.ownerName}</span>
                   </div>
                   <select className="mt-4 h-10 w-full rounded-xl border border-ink/10 bg-white px-3 text-sm font-bold outline-none ring-pine/20 focus:ring-4" value={deal.stage} disabled={updatingId === deal.id} onChange={(event) => updateDealStage(deal, event.target.value)}>
                     {dealStages.map((option) => <option key={option} value={option}>{stageLabels[option]}</option>)}

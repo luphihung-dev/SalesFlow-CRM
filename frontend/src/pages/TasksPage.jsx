@@ -106,15 +106,15 @@ export default function TasksPage() {
         eyebrow="Tasks"
         title="Work queue"
         description="Create follow-ups and check work off. Completing a task creates a backend activity log."
-        action={<button className="inline-flex items-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => { setEditingTask(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Task</button>}
+        action={<button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft sm:w-auto" onClick={() => { setEditingTask(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Task</button>}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
       {sortedTasks.length ? (
         <div className="space-y-3">
           {sortedTasks.map((task) => (
-            <article key={task.id} className="flex flex-col gap-4 rounded-2xl border border-ink/10 bg-white p-5 shadow-card sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-4">
+            <article key={task.id} className="flex flex-col gap-4 rounded-2xl border border-ink/10 bg-white p-4 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="flex min-w-0 items-start gap-4">
                 <button
                   className={`mt-1 grid h-8 w-8 place-items-center rounded-lg border font-bold transition ${task.status === 'DONE' ? 'border-emerald-200 bg-emerald-100 text-emerald-700' : 'border-ink/10 bg-cream text-ink/30 hover:text-pine'}`}
                   type="button"
@@ -124,12 +124,12 @@ export default function TasksPage() {
                 >
                   <CheckCircle2 size={18} />
                 </button>
-                <div>
-                  <h2 className="font-display text-xl font-bold text-ink">{task.title}</h2>
-                  <p className="mt-1 text-sm font-semibold text-ink/55">{[task.customerName, task.teamName, `Due ${formatDate(task.dueDate)}`, `Owner ${task.userName || 'Unassigned'}`].filter(Boolean).join(' · ')}</p>
+                <div className="min-w-0">
+                  <h2 className="break-words font-display text-xl font-bold text-ink">{task.title}</h2>
+                  <p className="mt-1 break-words text-sm font-semibold leading-6 text-ink/55">{[task.customerName, task.teamName, `Due ${formatDate(task.dueDate)}`, `Owner ${task.userName || 'Unassigned'}`].filter(Boolean).join(' · ')}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 {task.overdue && <Badge tone="OVERDUE">Overdue</Badge>}
                 <Badge>{task.status}</Badge>
                 <button className="rounded-lg bg-fog p-2 text-pine transition hover:bg-pine hover:text-cream" type="button" onClick={() => { setEditingTask(task); setFormError(''); setIsModalOpen(true); }} aria-label="Edit task"><Edit3 size={16} /></button>
