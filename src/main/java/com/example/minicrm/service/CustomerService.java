@@ -4,6 +4,7 @@ import com.example.minicrm.dto.CustomerRequest;
 import com.example.minicrm.dto.CustomerResponse;
 import com.example.minicrm.entity.Customer;
 import com.example.minicrm.entity.CustomerCountry;
+import com.example.minicrm.entity.User;
 import com.example.minicrm.event.CustomerCreatedEvent;
 import com.example.minicrm.exception.DuplicateResourceException;
 import com.example.minicrm.exception.ResourceNotFoundException;
@@ -51,11 +52,12 @@ public class CustomerService {
         if (customerRepository.existsByEmail(request.email())) {
             throw new DuplicateResourceException("Customer email already exists: " + request.email());
         }
+        User currentUser = currentUserService.getCurrentUser();
         Customer customer = new Customer();
         applyRequest(customer, request);
-        customer.setTeam(currentUserService.getCurrentUser().getTeam());
+        customer.setTeam(currentUser.getTeam());
         Customer savedCustomer = customerRepository.save(customer);
-        eventPublisher.publishEvent(new CustomerCreatedEvent(savedCustomer.getId()));
+        eventPublisher.publishEvent(new CustomerCreatedEvent(savedCustomer.getId(), currentUser.getId()));
         return toResponse(savedCustomer);
     }
 
@@ -106,6 +108,11 @@ public class CustomerService {
         Long currentTeamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
         Long customerTeamId = customer.getTeam() == null ? null : customer.getTeam().getId();
         if (currentUserService.isManager(currentUser) && currentTeamId != null && currentTeamId.equals(customerTeamId)) {
+            return;
+        }
+        boolean ownsDeal = customer.getDeals().stream().anyMatch((deal) -> deal.getOwner().getId().equals(currentUser.getId()));
+        boolean ownsTask = customer.getTasks().stream().anyMatch((task) -> task.getUser() != null && task.getUser().getId().equals(currentUser.getId()));
+        if (currentUserService.isSales(currentUser) && (ownsDeal || ownsTask)) {
             return;
         }
         throw new ResourceNotFoundException("Customer not found with id: " + customer.getId());

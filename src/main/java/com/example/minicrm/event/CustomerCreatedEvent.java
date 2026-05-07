@@ -1,4 +1,4 @@
 package com.example.minicrm.event;
 
-public record CustomerCreatedEvent(Long customerId) {
+public record CustomerCreatedEvent(Long customerId, Long ownerId) {
 }

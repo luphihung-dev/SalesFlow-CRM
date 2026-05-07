@@ -15,6 +15,7 @@ import com.example.minicrm.repository.ActivityRepository;
 import com.example.minicrm.repository.CustomerRepository;
 import com.example.minicrm.repository.DealRepository;
 import com.example.minicrm.repository.TaskRepository;
+import com.example.minicrm.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.context.event.EventListener;
@@ -32,17 +33,20 @@ public class CrmAutomationListener {
     private final DealRepository dealRepository;
     private final TaskRepository taskRepository;
     private final ActivityRepository activityRepository;
+    private final UserRepository userRepository;
 
     public CrmAutomationListener(
             CustomerRepository customerRepository,
             DealRepository dealRepository,
             TaskRepository taskRepository,
-            ActivityRepository activityRepository
+            ActivityRepository activityRepository,
+            UserRepository userRepository
     ) {
         this.customerRepository = customerRepository;
         this.dealRepository = dealRepository;
         this.taskRepository = taskRepository;
         this.activityRepository = activityRepository;
+        this.userRepository = userRepository;
     }
 
     @EventListener
@@ -55,6 +59,7 @@ public class CrmAutomationListener {
         task.setDueDate(LocalDate.now().plusDays(2));
         task.setStatus(TaskStatus.TODO);
         task.setCustomer(customer);
+        userRepository.findById(event.ownerId()).ifPresent(task::setUser);
         taskRepository.save(task);
     }
 
