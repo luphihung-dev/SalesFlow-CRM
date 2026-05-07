@@ -7,7 +7,7 @@ export default function TrendKpiCard({ label, value, trend, detail, icon: Icon, 
   const TrendIcon = isPositive ? ArrowUpRight : ArrowDownRight;
 
   return (
-    <section className="rounded-[1.75rem] border border-white/70 bg-white/85 p-5 shadow-card backdrop-blur">
+    <section className="rounded-2xl border border-ink/10 bg-white p-5 shadow-card">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-ink/45">{label}</p>
@@ -19,7 +19,7 @@ export default function TrendKpiCard({ label, value, trend, detail, icon: Icon, 
             <span className="text-xs font-bold text-ink/45">{detail}</span>
           </div>
         </div>
-        {Icon && <div className={`grid h-12 w-12 place-items-center rounded-2xl ${iconClass} text-cream shadow-soft`}><Icon size={22} /></div>}
+        {Icon && <div className={`grid h-12 w-12 place-items-center rounded-xl ${iconClass} text-cream shadow-soft`}><Icon size={22} /></div>}
       </div>
     </section>
   );

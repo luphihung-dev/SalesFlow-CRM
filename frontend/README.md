@@ -1,6 +1,6 @@
-# Mini CRM Frontend
+# SalesFlow CRM Frontend
 
-React SaaS dashboard UI for the Mini CRM backend.
+React SaaS dashboard UI for the SalesFlow CRM backend.
 
 ## Stack
 
@@ -37,6 +37,7 @@ VITE_API_BASE_URL=http://localhost:8080/api
 - Deals: fetch pipeline, create deal, update deal stage, show manager approval badges for enterprise deals.
 - Tasks: fetch task list, create task, mark task as done, show overdue work queue badges.
 - Activities: fetch customer activity timeline, create activity from customer detail.
+- Teams: surface team ownership in search results, contacts, tasks, deals, and customer profile context.
 - Errors: API and validation errors are displayed through reusable error banners.
 
 ## Salesforce-Inspired Automation UI

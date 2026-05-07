@@ -10,6 +10,7 @@ public record UserRequest(
         @NotBlank @Size(max = 120) String name,
         @NotBlank @Email @Size(max = 160) String email,
         @NotBlank @Size(min = 8, max = 120) String password,
-        @NotNull UserRole role
+        @NotNull UserRole role,
+        Long teamId
 ) {
 }

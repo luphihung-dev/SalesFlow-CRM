@@ -1,12 +1,12 @@
 export default function DataTable({ columns, rows, keyField = 'id', onRowClick }) {
   return (
-    <div className="overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/80 shadow-card backdrop-blur">
+    <div className="overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-card">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-ink/10">
-          <thead className="bg-cream/80">
+          <thead className="bg-fog/80">
             <tr>
               {columns.map((column) => (
-                <th key={column.key} className="px-5 py-4 text-left text-xs font-extrabold uppercase tracking-[0.16em] text-ink/50">
+                <th key={column.key} className="px-5 py-4 text-left text-xs font-extrabold uppercase tracking-[0.14em] text-ink/50">
                   {column.header}
                 </th>
               ))}

@@ -12,6 +12,8 @@ public record CustomerResponse(
         CustomerCountry country,
         String company,
         CustomerStatus status,
-        Instant createdAt
+        Instant createdAt,
+        Long teamId,
+        String teamName
 ) {
 }

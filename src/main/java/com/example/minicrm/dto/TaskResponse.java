@@ -12,6 +12,8 @@ public record TaskResponse(
         Long userId,
         String userName,
         Long customerId,
-        String customerName
+        String customerName,
+        Long teamId,
+        String teamName
 ) {
 }

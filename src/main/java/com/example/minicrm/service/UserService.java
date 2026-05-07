@@ -2,6 +2,7 @@ package com.example.minicrm.service;
 
 import com.example.minicrm.dto.UserRequest;
 import com.example.minicrm.dto.UserResponse;
+import com.example.minicrm.entity.Team;
 import com.example.minicrm.entity.User;
 import com.example.minicrm.exception.DuplicateResourceException;
 import com.example.minicrm.exception.ResourceNotFoundException;
@@ -17,20 +18,37 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TeamService teamService;
+    private final CurrentUserService currentUserService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TeamService teamService, CurrentUserService currentUserService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.teamService = teamService;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional(readOnly = true)
     public List<UserResponse> findAll() {
-        return userRepository.findAll().stream().map(this::toResponse).toList();
+        User currentUser = currentUserService.getCurrentUser();
+        if (currentUserService.isAdmin(currentUser)) {
+            return userRepository.findAll().stream().map(this::toResponse).toList();
+        }
+        if (currentUserService.isManager(currentUser)) {
+            Long teamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
+            return userRepository.findAll().stream()
+                    .filter((user) -> teamId != null && user.getTeam() != null && teamId.equals(user.getTeam().getId()))
+                    .map(this::toResponse)
+                    .toList();
+        }
+        return List.of(toResponse(currentUser));
     }
 
     @Transactional(readOnly = true)
     public UserResponse findById(Long id) {
-        return toResponse(getUser(id));
+        User user = getUser(id);
+        verifyReadable(user);
+        return toResponse(user);
     }
 
     public UserResponse create(UserRequest request) {
@@ -61,14 +79,36 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
+    private void verifyReadable(User user) {
+        User currentUser = currentUserService.getCurrentUser();
+        if (currentUserService.isAdmin(currentUser) || user.getId().equals(currentUser.getId())) {
+            return;
+        }
+        Long currentTeamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
+        Long userTeamId = user.getTeam() == null ? null : user.getTeam().getId();
+        if (currentUserService.isManager(currentUser) && currentTeamId != null && currentTeamId.equals(userTeamId)) {
+            return;
+        }
+        throw new ResourceNotFoundException("User not found with id: " + user.getId());
+    }
+
     private void applyRequest(User user, UserRequest request) {
         user.setName(request.name());
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(request.role());
+        Team team = request.teamId() == null ? null : teamService.getTeam(request.teamId());
+        user.setTeam(team);
     }
 
     private UserResponse toResponse(User user) {
-        return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getRole());
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getTeam() == null ? null : user.getTeam().getId(),
+                user.getTeam() == null ? null : user.getTeam().getName()
+        );
     }
 }

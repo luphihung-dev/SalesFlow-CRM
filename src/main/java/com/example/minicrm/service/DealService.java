@@ -26,22 +26,34 @@ public class DealService {
     private final CustomerService customerService;
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
+    private final CurrentUserService currentUserService;
 
-    public DealService(DealRepository dealRepository, CustomerService customerService, UserService userService, ApplicationEventPublisher eventPublisher) {
+    public DealService(DealRepository dealRepository, CustomerService customerService, UserService userService, ApplicationEventPublisher eventPublisher, CurrentUserService currentUserService) {
         this.dealRepository = dealRepository;
         this.customerService = customerService;
         this.userService = userService;
         this.eventPublisher = eventPublisher;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional(readOnly = true)
     public List<DealResponse> findAll() {
-        return dealRepository.findAll().stream().map(this::toResponse).toList();
+        var currentUser = currentUserService.getCurrentUser();
+        if (currentUserService.isAdmin(currentUser)) {
+            return dealRepository.findAll().stream().map(this::toResponse).toList();
+        }
+        if (currentUserService.isManager(currentUser)) {
+            Long teamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
+            return teamId == null ? List.of() : dealRepository.findByOwnerTeamId(teamId).stream().map(this::toResponse).toList();
+        }
+        return dealRepository.findByOwnerId(currentUser.getId()).stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public DealResponse findById(Long id) {
-        return toResponse(getDeal(id));
+        Deal deal = getDeal(id);
+        verifyReadable(deal);
+        return toResponse(deal);
     }
 
     public DealResponse create(DealRequest request) {
@@ -54,6 +66,7 @@ public class DealService {
 
     public DealResponse update(Long id, DealRequest request) {
         Deal deal = getDeal(id);
+        verifyWritable(deal);
         DealStage previousStage = deal.getStage();
         applyRequest(deal, request);
         if (previousStage != DealStage.CLOSED && deal.getStage() == DealStage.CLOSED) {
@@ -64,6 +77,7 @@ public class DealService {
 
     public void delete(Long id) {
         Deal deal = getDeal(id);
+        verifyWritable(deal);
         dealRepository.delete(deal);
     }
 
@@ -75,12 +89,53 @@ public class DealService {
     private void applyRequest(Deal deal, DealRequest request) {
         Customer customer = customerService.getCustomer(request.customerId());
         User owner = userService.getUser(request.ownerId());
+        verifyCanAssign(customer, owner);
         deal.setName(request.name());
         deal.setAmount(request.amount());
         deal.setStage(request.stage());
         deal.setRequiresManagerApproval(request.amount().compareTo(MANAGER_APPROVAL_THRESHOLD) > 0);
         deal.setCustomer(customer);
         deal.setOwner(owner);
+    }
+
+    private void verifyReadable(Deal deal) {
+        var currentUser = currentUserService.getCurrentUser();
+        if (currentUserService.isAdmin(currentUser)) {
+            return;
+        }
+        Long currentTeamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
+        Long ownerTeamId = deal.getOwner().getTeam() == null ? null : deal.getOwner().getTeam().getId();
+        if (currentUserService.isManager(currentUser) && currentTeamId != null && currentTeamId.equals(ownerTeamId)) {
+            return;
+        }
+        if (currentUserService.isSales(currentUser) && deal.getOwner().getId().equals(currentUser.getId())) {
+            return;
+        }
+        throw new ResourceNotFoundException("Deal not found with id: " + deal.getId());
+    }
+
+    private void verifyWritable(Deal deal) {
+        verifyReadable(deal);
+    }
+
+    private void verifyCanAssign(Customer customer, User owner) {
+        var currentUser = currentUserService.getCurrentUser();
+        Long customerTeamId = customer.getTeam() == null ? null : customer.getTeam().getId();
+        Long ownerTeamId = owner.getTeam() == null ? null : owner.getTeam().getId();
+        if (customerTeamId != null && ownerTeamId != null && !customerTeamId.equals(ownerTeamId)) {
+            throw new IllegalArgumentException("Deal owner must belong to the same team as the customer.");
+        }
+        if (currentUserService.isAdmin(currentUser)) {
+            return;
+        }
+        Long currentTeamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
+        if (currentUserService.isManager(currentUser) && currentTeamId != null && currentTeamId.equals(ownerTeamId)) {
+            return;
+        }
+        if (currentUserService.isSales(currentUser) && owner.getId().equals(currentUser.getId())) {
+            return;
+        }
+        throw new ResourceNotFoundException("User not found with id: " + owner.getId());
     }
 
     private DealResponse toResponse(Deal deal) {
@@ -93,7 +148,9 @@ public class DealService {
                 deal.getCustomer().getId(),
                 deal.getCustomer().getName(),
                 deal.getOwner().getId(),
-                deal.getOwner().getName()
+                deal.getOwner().getName(),
+                deal.getOwner().getTeam() == null ? null : deal.getOwner().getTeam().getId(),
+                deal.getOwner().getTeam() == null ? null : deal.getOwner().getTeam().getName()
         );
     }
 }

@@ -12,6 +12,8 @@ public record DealResponse(
         Long customerId,
         String customerName,
         Long ownerId,
-        String ownerName
+        String ownerName,
+        Long teamId,
+        String teamName
 ) {
 }

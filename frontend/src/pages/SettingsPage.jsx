@@ -76,8 +76,8 @@ export default function SettingsPage() {
 
       <section className="grid gap-3 md:grid-cols-3">
         {automationStats.map(({ label, value, detail, icon: Icon, tone }) => (
-          <div key={label} className="flex items-center gap-4 rounded-[1.25rem] border border-white/70 bg-white/80 p-4 shadow-card">
-            <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${tone}`}>
+          <div key={label} className="flex items-center gap-4 rounded-2xl border border-ink/10 bg-white p-4 shadow-card">
+            <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${tone}`}>
               <Icon size={20} />
             </div>
             <div className="min-w-0">
@@ -92,7 +92,7 @@ export default function SettingsPage() {
       </section>
 
       <section className="mt-6 grid gap-5 xl:grid-cols-[1fr_22rem]">
-        <div className="overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/80 shadow-card">
+        <div className="overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-card">
           <div className="border-b border-ink/5 px-5 py-4">
             <h2 className="font-display text-2xl font-bold text-ink">Rule inventory</h2>
             <p className="mt-1 text-sm font-semibold text-ink/55">Backend event rules currently active in the CRM workflow.</p>
@@ -126,7 +126,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <aside className="rounded-[1.5rem] border border-white/70 bg-ink p-5 text-cream shadow-card">
+        <aside className="rounded-2xl border border-white/10 bg-ink p-5 text-cream shadow-card">
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-cream/45">Implementation</p>
           <h2 className="mt-3 font-display text-2xl font-bold">Spring events</h2>
           <p className="mt-3 text-sm font-semibold leading-6 text-cream/65">

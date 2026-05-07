@@ -105,14 +105,14 @@ export default function DealsPage() {
         eyebrow="Deals"
         title="Pipeline board"
         description="Create opportunities and move them through the pipeline. High-value deals trigger backend activity automation."
-        action={<button className="inline-flex items-center gap-2 rounded-2xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => { setEditingDeal(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Deal</button>}
+        action={<button className="inline-flex items-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => { setEditingDeal(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Deal</button>}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
-      <div className="grid gap-5 xl:grid-cols-4">
+      <div className="grid gap-4 xl:grid-cols-4">
         {dealStages.map((stage) => (
-          <section key={stage} className="rounded-[2rem] border border-white/70 bg-white/70 p-4 shadow-card">
-            <div className="mb-4 flex items-center justify-between">
+          <section key={stage} className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card">
+            <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h2 className="font-display text-xl font-bold text-ink">{stageLabels[stage]}</h2>
                 <p className="text-sm font-bold text-ink/45">{groupedDeals[stage].length} deals</p>
@@ -121,24 +121,25 @@ export default function DealsPage() {
             </div>
             <div className="space-y-3">
               {groupedDeals[stage].map((deal) => (
-                <article key={deal.id} className="rounded-3xl border border-ink/5 bg-cream p-4 shadow-card transition hover:-translate-y-1">
-                  <p className="font-display text-lg font-bold text-ink">{deal.name}</p>
-                  <p className="mt-1 text-sm font-semibold text-ink/55">{deal.customerName}</p>
+                <article key={deal.id} className="rounded-xl border border-ink/10 bg-cream p-4 transition hover:border-pine/30 hover:shadow-card">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-display text-lg font-bold text-ink">{deal.name}</p>
+                      <p className="mt-1 truncate text-sm font-semibold text-ink/55">{deal.customerName}</p>
+                      {deal.teamName && <p className="mt-1 truncate text-xs font-extrabold uppercase tracking-[0.12em] text-moss">{deal.teamName}</p>}
+                    </div>
+                    {deal.requiresManagerApproval && <Badge tone="APPROVAL">Approval</Badge>}
+                  </div>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="font-display text-xl font-bold text-pine">{formatCurrency(deal.amount)}</span>
-                    <span className="text-xs font-extrabold uppercase tracking-[0.16em] text-ink/40">{deal.ownerName}</span>
+                    <span className="max-w-[7rem] truncate text-xs font-extrabold uppercase tracking-[0.14em] text-ink/40">{deal.ownerName}</span>
                   </div>
-                  {deal.requiresManagerApproval && (
-                    <div className="mt-3">
-                      <Badge tone="APPROVAL">Manager approval</Badge>
-                    </div>
-                  )}
-                  <select className="mt-4 h-10 w-full rounded-2xl border border-ink/10 bg-white px-3 text-sm font-bold outline-none" value={deal.stage} disabled={updatingId === deal.id} onChange={(event) => updateDealStage(deal, event.target.value)}>
+                  <select className="mt-4 h-10 w-full rounded-xl border border-ink/10 bg-white px-3 text-sm font-bold outline-none ring-pine/20 focus:ring-4" value={deal.stage} disabled={updatingId === deal.id} onChange={(event) => updateDealStage(deal, event.target.value)}>
                     {dealStages.map((option) => <option key={option} value={option}>{stageLabels[option]}</option>)}
                   </select>
                   <div className="mt-3 flex gap-2">
-                    <button className="flex-1 rounded-2xl bg-white px-3 py-2 text-sm font-extrabold text-pine shadow-card" type="button" onClick={() => { setEditingDeal(deal); setFormError(''); setIsModalOpen(true); }}><Edit3 className="mr-1 inline" size={15} /> Edit</button>
-                    {canDelete && <button className="flex-1 rounded-2xl bg-white px-3 py-2 text-sm font-extrabold text-clay shadow-card" type="button" onClick={() => setDeletingDeal(deal)}><Trash2 className="mr-1 inline" size={15} /> Delete</button>}
+                    <button className="flex-1 rounded-xl bg-white px-3 py-2 text-sm font-extrabold text-pine transition hover:bg-pine hover:text-cream" type="button" onClick={() => { setEditingDeal(deal); setFormError(''); setIsModalOpen(true); }}><Edit3 className="mr-1 inline" size={15} /> Edit</button>
+                    {canDelete && <button className="flex-1 rounded-xl bg-white px-3 py-2 text-sm font-extrabold text-clay transition hover:bg-clay hover:text-cream" type="button" onClick={() => setDeletingDeal(deal)}><Trash2 className="mr-1 inline" size={15} /> Delete</button>}
                   </div>
                 </article>
               ))}

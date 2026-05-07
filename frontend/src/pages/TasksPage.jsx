@@ -106,17 +106,17 @@ export default function TasksPage() {
         eyebrow="Tasks"
         title="Work queue"
         description="Create follow-ups and check work off. Completing a task creates a backend activity log."
-        action={<button className="inline-flex items-center gap-2 rounded-2xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => { setEditingTask(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Task</button>}
+        action={<button className="inline-flex items-center gap-2 rounded-xl bg-pine px-5 py-3 text-sm font-extrabold text-cream shadow-soft" onClick={() => { setEditingTask(null); setFormError(''); setIsModalOpen(true); }} type="button"><Plus size={18} /> Add Task</button>}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
       {sortedTasks.length ? (
         <div className="space-y-3">
           {sortedTasks.map((task) => (
-            <article key={task.id} className="flex flex-col gap-4 rounded-[1.5rem] border border-white/70 bg-white/80 p-5 shadow-card sm:flex-row sm:items-center sm:justify-between">
+            <article key={task.id} className="flex flex-col gap-4 rounded-2xl border border-ink/10 bg-white p-5 shadow-card sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-4">
                 <button
-                  className={`mt-1 grid h-8 w-8 place-items-center rounded-xl border font-bold transition ${task.status === 'DONE' ? 'border-emerald-200 bg-emerald-100 text-emerald-700' : 'border-ink/10 bg-cream text-ink/30 hover:text-pine'}`}
+                  className={`mt-1 grid h-8 w-8 place-items-center rounded-lg border font-bold transition ${task.status === 'DONE' ? 'border-emerald-200 bg-emerald-100 text-emerald-700' : 'border-ink/10 bg-cream text-ink/30 hover:text-pine'}`}
                   type="button"
                   onClick={() => markDone(task)}
                   disabled={updatingId === task.id || task.status === 'DONE'}
@@ -126,14 +126,14 @@ export default function TasksPage() {
                 </button>
                 <div>
                   <h2 className="font-display text-xl font-bold text-ink">{task.title}</h2>
-                  <p className="mt-1 text-sm font-semibold text-ink/55">{task.customerName} · Due {formatDate(task.dueDate)} · Owner {task.userName || 'Unassigned'}</p>
+                  <p className="mt-1 text-sm font-semibold text-ink/55">{[task.customerName, task.teamName, `Due ${formatDate(task.dueDate)}`, `Owner ${task.userName || 'Unassigned'}`].filter(Boolean).join(' · ')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {task.overdue && <Badge tone="OVERDUE">Overdue</Badge>}
                 <Badge>{task.status}</Badge>
-                <button className="rounded-xl bg-white p-2 text-pine shadow-card" type="button" onClick={() => { setEditingTask(task); setFormError(''); setIsModalOpen(true); }} aria-label="Edit task"><Edit3 size={16} /></button>
-                {canDelete && <button className="rounded-xl bg-white p-2 text-clay shadow-card" type="button" onClick={() => setDeletingTask(task)} aria-label="Delete task"><Trash2 size={16} /></button>}
+                <button className="rounded-lg bg-fog p-2 text-pine transition hover:bg-pine hover:text-cream" type="button" onClick={() => { setEditingTask(task); setFormError(''); setIsModalOpen(true); }} aria-label="Edit task"><Edit3 size={16} /></button>
+                {canDelete && <button className="rounded-lg bg-fog p-2 text-clay transition hover:bg-clay hover:text-cream" type="button" onClick={() => setDeletingTask(task)} aria-label="Delete task"><Trash2 size={16} /></button>}
               </div>
             </article>
           ))}

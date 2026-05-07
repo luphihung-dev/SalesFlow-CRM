@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, DollarSign, Percent, TrendingUp } from 'lucide-react';
+import { AlertTriangle, BadgeCheck, BriefcaseBusiness, DollarSign, ListTodo, Percent, TrendingUp } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { crmApi } from '../api/crmApi';
 import EmptyState from '../components/EmptyState';
@@ -44,6 +44,43 @@ export default function DashboardPage() {
   }, [currentUser?.userId, salesView, state]);
 
   const analytics = useMemo(() => buildDashboardAnalytics(scopedData), [scopedData]);
+  const focusItems = useMemo(() => {
+    const openDeals = scopedData.deals.filter((deal) => deal.stage !== 'CLOSED').length;
+    const approvalDeals = scopedData.deals.filter((deal) => deal.requiresManagerApproval).length;
+    const overdueTasks = scopedData.tasks.filter((task) => task.overdue).length;
+    const completedTasks = scopedData.tasks.filter((task) => task.status === 'DONE').length;
+
+    return [
+      {
+        label: 'Open pipeline',
+        value: openDeals,
+        detail: salesView ? 'owned active deals' : 'active deals in motion',
+        icon: BriefcaseBusiness,
+        tone: 'bg-pine text-cream'
+      },
+      {
+        label: 'Needs approval',
+        value: approvalDeals,
+        detail: 'manager review queue',
+        icon: AlertTriangle,
+        tone: approvalDeals ? 'bg-clay text-cream' : 'bg-moss text-cream'
+      },
+      {
+        label: 'Overdue work',
+        value: overdueTasks,
+        detail: 'tasks past due date',
+        icon: ListTodo,
+        tone: overdueTasks ? 'bg-clay text-cream' : 'bg-pine text-cream'
+      },
+      {
+        label: 'Completed tasks',
+        value: completedTasks,
+        detail: 'follow-ups logged',
+        icon: BadgeCheck,
+        tone: 'bg-fog text-pine'
+      }
+    ];
+  }, [salesView, scopedData.deals, scopedData.tasks]);
 
   if (state.loading) return <LoadingState label="Loading CRM analytics..." />;
 
@@ -62,6 +99,31 @@ export default function DashboardPage() {
         <EmptyState title="No analytics data yet" description="Create customers, deals, tasks, and activities to populate CRM insights." />
       ) : (
         <>
+          <section className="mb-6 overflow-hidden rounded-2xl bg-ink text-cream shadow-soft">
+            <div className="grid gap-px bg-white/10 lg:grid-cols-[1.15fr_2.85fr]">
+              <div className="bg-ink p-6">
+                <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-sand/50">Today&apos;s focus</p>
+                <h2 className="mt-2 font-display text-3xl font-bold">Pipeline signals</h2>
+                <p className="mt-3 max-w-sm text-sm leading-6 text-sand/60">A quick operational view of what should get attention before reviewing charts.</p>
+              </div>
+              <div className="grid bg-ink/95 sm:grid-cols-2 xl:grid-cols-4">
+                {focusItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.label} className="border-t border-white/10 p-5 sm:border-l sm:border-t-0">
+                      <span className={`grid h-11 w-11 place-items-center rounded-xl ${item.tone}`}><Icon size={19} /></span>
+                      <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.18em] text-sand/50">{item.label}</p>
+                      <div className="mt-2 flex items-end gap-2">
+                        <span className="font-display text-4xl font-bold leading-none">{item.value}</span>
+                        <span className="pb-1 text-xs font-bold text-sand/50">{item.detail}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             <TrendKpiCard label="Total Revenue" value={formatCurrency(analytics.totalRevenue)} trend={analytics.revenueGrowth} detail="vs previous period" icon={DollarSign} tone="positive" />
             <TrendKpiCard label="Total Deals" value={analytics.totalDeals} trend={analytics.dealsTrend} detail={salesView ? 'owned deals' : 'all pipeline deals'} icon={BriefcaseBusiness} tone="neutral" />

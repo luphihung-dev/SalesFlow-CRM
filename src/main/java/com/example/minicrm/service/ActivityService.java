@@ -16,20 +16,32 @@ public class ActivityService {
 
     private final ActivityRepository activityRepository;
     private final CustomerService customerService;
+    private final CurrentUserService currentUserService;
 
-    public ActivityService(ActivityRepository activityRepository, CustomerService customerService) {
+    public ActivityService(ActivityRepository activityRepository, CustomerService customerService, CurrentUserService currentUserService) {
         this.activityRepository = activityRepository;
         this.customerService = customerService;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional(readOnly = true)
     public List<ActivityResponse> findAll() {
-        return activityRepository.findAll().stream().map(this::toResponse).toList();
+        var currentUser = currentUserService.getCurrentUser();
+        if (currentUserService.isAdmin(currentUser)) {
+            return activityRepository.findAll().stream().map(this::toResponse).toList();
+        }
+        if (currentUserService.isManager(currentUser)) {
+            Long teamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
+            return teamId == null ? List.of() : activityRepository.findByCustomerTeamId(teamId).stream().map(this::toResponse).toList();
+        }
+        return activityRepository.findVisibleToSales(currentUser.getId()).stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public ActivityResponse findById(Long id) {
-        return toResponse(getActivity(id));
+        Activity activity = getActivity(id);
+        customerService.verifyReadable(activity.getCustomer());
+        return toResponse(activity);
     }
 
     public ActivityResponse create(ActivityRequest request) {
@@ -40,12 +52,14 @@ public class ActivityService {
 
     public ActivityResponse update(Long id, ActivityRequest request) {
         Activity activity = getActivity(id);
+        customerService.verifyWritable(activity.getCustomer());
         applyRequest(activity, request);
         return toResponse(activity);
     }
 
     public void delete(Long id) {
         Activity activity = getActivity(id);
+        customerService.verifyWritable(activity.getCustomer());
         activityRepository.delete(activity);
     }
 
@@ -56,6 +70,7 @@ public class ActivityService {
 
     private void applyRequest(Activity activity, ActivityRequest request) {
         Customer customer = customerService.getCustomer(request.customerId());
+        customerService.verifyReadable(customer);
         activity.setType(request.type());
         activity.setDescription(request.description());
         activity.setCustomer(customer);

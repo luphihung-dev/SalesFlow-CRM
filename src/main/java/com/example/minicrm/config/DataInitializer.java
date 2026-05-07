@@ -9,12 +9,14 @@ import com.example.minicrm.entity.Deal;
 import com.example.minicrm.entity.DealStage;
 import com.example.minicrm.entity.Task;
 import com.example.minicrm.entity.TaskStatus;
+import com.example.minicrm.entity.Team;
 import com.example.minicrm.entity.User;
 import com.example.minicrm.entity.UserRole;
 import com.example.minicrm.repository.ActivityRepository;
 import com.example.minicrm.repository.CustomerRepository;
 import com.example.minicrm.repository.DealRepository;
 import com.example.minicrm.repository.TaskRepository;
+import com.example.minicrm.repository.TeamRepository;
 import com.example.minicrm.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,6 +33,7 @@ public class DataInitializer implements CommandLineRunner {
     private final DealRepository dealRepository;
     private final TaskRepository taskRepository;
     private final ActivityRepository activityRepository;
+    private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
     private final String adminName;
     private final String adminEmail;
@@ -42,6 +45,7 @@ public class DataInitializer implements CommandLineRunner {
             DealRepository dealRepository,
             TaskRepository taskRepository,
             ActivityRepository activityRepository,
+            TeamRepository teamRepository,
             PasswordEncoder passwordEncoder,
             @Value("${app.bootstrap-admin.name}") String adminName,
             @Value("${app.bootstrap-admin.email}") String adminEmail,
@@ -52,6 +56,7 @@ public class DataInitializer implements CommandLineRunner {
         this.dealRepository = dealRepository;
         this.taskRepository = taskRepository;
         this.activityRepository = activityRepository;
+        this.teamRepository = teamRepository;
         this.passwordEncoder = passwordEncoder;
         this.adminName = adminName;
         this.adminEmail = adminEmail;
@@ -60,19 +65,27 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        User admin = userRepository.findByEmail(adminEmail).orElseGet(() -> createUser(adminName, adminEmail, adminPassword, UserRole.ADMIN));
-        User sales = userRepository.findByEmail("sales@crm.local").orElseGet(() -> createUser("Mia Sales", "sales@crm.local", "Sales12345", UserRole.SALES));
-        User manager = userRepository.findByEmail("manager@crm.local").orElseGet(() -> createUser("Linh Manager", "manager@crm.local", "Manager12345", UserRole.MANAGER));
+        Team enterpriseTeam = teamRepository.findByName("Enterprise Sales")
+                .orElseGet(() -> createTeam("Enterprise Sales", "Handles larger accounts, approvals, and multi-stakeholder opportunities."));
+        Team growthTeam = teamRepository.findByName("Growth Sales")
+                .orElseGet(() -> createTeam("Growth Sales", "Handles SMB customers, pilots, and fast-cycle opportunities."));
+
+        User admin = userRepository.findByEmail(adminEmail).orElseGet(() -> createUser(adminName, adminEmail, adminPassword, UserRole.ADMIN, null));
+        User sales = userRepository.findByEmail("sales@crm.local").orElseGet(() -> createUser("Mia Sales", "sales@crm.local", "Sales12345", UserRole.SALES, growthTeam));
+        User manager = userRepository.findByEmail("manager@crm.local").orElseGet(() -> createUser("Linh Manager", "manager@crm.local", "Manager12345", UserRole.MANAGER, growthTeam));
+        assignTeamIfMissing(sales, growthTeam);
+        assignTeamIfMissing(manager, growthTeam);
 
         if (customerRepository.count() > 0) {
+            assignMissingCustomerTeams(growthTeam);
             return;
         }
 
-        Customer saigonRetail = createCustomer("Saigon Retail Group", "procurement@saigonretail.test", "+84 901 234 567", CustomerCountry.VN, "Saigon Retail", CustomerStatus.ACTIVE);
-        Customer lotusClinic = createCustomer("Lotus Care Clinic", "ops@lotuscare.test", "+84 987 654 321", CustomerCountry.VN, "Lotus Care", CustomerStatus.PROSPECT);
-        Customer sakuraFoods = createCustomer("Sakura Foods Japan", "partnership@sakurafoods.test", "+81 90 1234 5678", CustomerCountry.JP, "Sakura Foods", CustomerStatus.ACTIVE);
-        Customer pacificLogistics = createCustomer("Pacific Logistics", "logistics@pacific.test", "+1 415 555 0198", CustomerCountry.US, "Pacific Logistics", CustomerStatus.ACTIVE);
-        Customer mekongEdu = createCustomer("Mekong Edu Platform", "hello@mekongedu.test", "+84 912 345 678", CustomerCountry.VN, "Mekong Edu", CustomerStatus.INACTIVE);
+        Customer saigonRetail = createCustomer("Saigon Retail Group", "procurement@saigonretail.test", "+84 901 234 567", CustomerCountry.VN, "Saigon Retail", CustomerStatus.ACTIVE, growthTeam);
+        Customer lotusClinic = createCustomer("Lotus Care Clinic", "ops@lotuscare.test", "+84 987 654 321", CustomerCountry.VN, "Lotus Care", CustomerStatus.PROSPECT, growthTeam);
+        Customer sakuraFoods = createCustomer("Sakura Foods Japan", "partnership@sakurafoods.test", "+81 90 1234 5678", CustomerCountry.JP, "Sakura Foods", CustomerStatus.ACTIVE, growthTeam);
+        Customer pacificLogistics = createCustomer("Pacific Logistics", "logistics@pacific.test", "+1 415 555 0198", CustomerCountry.US, "Pacific Logistics", CustomerStatus.ACTIVE, growthTeam);
+        Customer mekongEdu = createCustomer("Mekong Edu Platform", "hello@mekongedu.test", "+84 912 345 678", CustomerCountry.VN, "Mekong Edu", CustomerStatus.INACTIVE, enterpriseTeam);
 
         createDeal("Retail CRM onboarding", new BigDecimal("18500.00"), DealStage.QUALIFIED, saigonRetail, sales);
         createDeal("Healthcare follow-up workflow", new BigDecimal("7600.00"), DealStage.CONTACTED, lotusClinic, sales);
@@ -93,16 +106,40 @@ public class DataInitializer implements CommandLineRunner {
         createActivity(ActivityType.EMAIL, "Sent pilot wrap-up note and marked account inactive until next semester budget review.", mekongEdu);
     }
 
-    private User createUser(String name, String email, String password, UserRole role) {
+    private Team createTeam(String name, String description) {
+        Team team = new Team();
+        team.setName(name);
+        team.setDescription(description);
+        return teamRepository.save(team);
+    }
+
+    private User createUser(String name, String email, String password, UserRole role, Team team) {
         User user = new User();
         user.setName(name);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(role);
+        user.setTeam(team);
         return userRepository.save(user);
     }
 
-    private Customer createCustomer(String name, String email, String phone, CustomerCountry country, String company, CustomerStatus status) {
+    private void assignTeamIfMissing(User user, Team team) {
+        if (user.getTeam() == null) {
+            user.setTeam(team);
+            userRepository.save(user);
+        }
+    }
+
+    private void assignMissingCustomerTeams(Team defaultTeam) {
+        customerRepository.findAll().stream()
+                .filter((customer) -> customer.getTeam() == null)
+                .forEach((customer) -> {
+                    customer.setTeam(defaultTeam);
+                    customerRepository.save(customer);
+                });
+    }
+
+    private Customer createCustomer(String name, String email, String phone, CustomerCountry country, String company, CustomerStatus status, Team team) {
         Customer customer = new Customer();
         customer.setName(name);
         customer.setEmail(email);
@@ -110,6 +147,7 @@ public class DataInitializer implements CommandLineRunner {
         customer.setCountry(country);
         customer.setCompany(company);
         customer.setStatus(status);
+        customer.setTeam(team);
         return customerRepository.save(customer);
     }
 

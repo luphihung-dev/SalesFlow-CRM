@@ -6,6 +6,8 @@ public record UserResponse(
         Long id,
         String name,
         String email,
-        UserRole role
+        UserRole role,
+        Long teamId,
+        String teamName
 ) {
 }
