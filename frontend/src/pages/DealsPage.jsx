@@ -11,11 +11,11 @@ import PageHeader from '../components/PageHeader';
 import { dealStages, stageLabels } from '../utils/constants';
 import { getApiErrorMessage } from '../utils/apiErrors';
 import { formatCurrency } from '../utils/formatters';
-import { canDeleteRecords } from '../utils/permissions';
+import { canDeleteTeamRecords } from '../utils/permissions';
 import { notifySearchDataChanged } from '../utils/searchEvents';
 
 export default function DealsPage() {
-  const canDelete = canDeleteRecords();
+  const canDelete = canDeleteTeamRecords();
   const [deals, setDeals] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);

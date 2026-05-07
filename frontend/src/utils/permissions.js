@@ -9,4 +9,5 @@ export const isSales = () => getCurrentRole() === 'SALES';
 
 export const canManageCustomers = () => isAdmin() || isManager();
 export const canDeleteRecords = () => isAdmin();
+export const canDeleteTeamRecords = () => isAdmin() || isManager();
 export const canAccessSettings = () => isAdmin();

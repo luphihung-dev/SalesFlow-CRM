@@ -76,7 +76,7 @@ public class TaskService {
 
     public void delete(Long id) {
         Task task = getTask(id);
-        verifyWritable(task);
+        verifyDeletable(task);
         taskRepository.delete(task);
     }
 
@@ -114,6 +114,19 @@ public class TaskService {
 
     private void verifyWritable(Task task) {
         verifyReadable(task);
+    }
+
+    private void verifyDeletable(Task task) {
+        User currentUser = currentUserService.getCurrentUser();
+        if (currentUserService.isAdmin(currentUser)) {
+            return;
+        }
+        Long currentTeamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
+        Long customerTeamId = task.getCustomer().getTeam() == null ? null : task.getCustomer().getTeam().getId();
+        if (currentUserService.isManager(currentUser) && currentTeamId != null && currentTeamId.equals(customerTeamId)) {
+            return;
+        }
+        throw new ResourceNotFoundException("Task not found with id: " + task.getId());
     }
 
     private void verifyCanAssign(Customer customer, User user) {

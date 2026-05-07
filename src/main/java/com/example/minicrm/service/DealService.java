@@ -77,7 +77,7 @@ public class DealService {
 
     public void delete(Long id) {
         Deal deal = getDeal(id);
-        verifyWritable(deal);
+        verifyDeletable(deal);
         dealRepository.delete(deal);
     }
 
@@ -116,6 +116,19 @@ public class DealService {
 
     private void verifyWritable(Deal deal) {
         verifyReadable(deal);
+    }
+
+    private void verifyDeletable(Deal deal) {
+        User currentUser = currentUserService.getCurrentUser();
+        if (currentUserService.isAdmin(currentUser)) {
+            return;
+        }
+        Long currentTeamId = currentUser.getTeam() == null ? null : currentUser.getTeam().getId();
+        Long ownerTeamId = deal.getOwner().getTeam() == null ? null : deal.getOwner().getTeam().getId();
+        if (currentUserService.isManager(currentUser) && currentTeamId != null && currentTeamId.equals(ownerTeamId)) {
+            return;
+        }
+        throw new ResourceNotFoundException("Deal not found with id: " + deal.getId());
     }
 
     private void verifyCanAssign(Customer customer, User owner) {

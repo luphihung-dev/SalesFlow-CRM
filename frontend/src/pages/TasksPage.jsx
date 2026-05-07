@@ -11,11 +11,11 @@ import Modal from '../components/Modal';
 import PageHeader from '../components/PageHeader';
 import { getApiErrorMessage } from '../utils/apiErrors';
 import { formatDate } from '../utils/formatters';
-import { canDeleteRecords } from '../utils/permissions';
+import { canDeleteTeamRecords } from '../utils/permissions';
 import { notifySearchDataChanged } from '../utils/searchEvents';
 
 export default function TasksPage() {
-  const canDelete = canDeleteRecords();
+  const canDelete = canDeleteTeamRecords();
   const [tasks, setTasks] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);
