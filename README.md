@@ -12,22 +12,32 @@ The project was designed for an intern software engineer application where CRM/S
 
 Demo accounts:
 
-| Role | Email | Password | What to Test |
-|---|---|---|---|
-| Admin | `admin@crm.local` | `Admin12345` | Full workspace access, settings, delete permissions |
-| Manager | `manager@crm.local` | `Manager12345` | Team pipeline, team tasks, manager delete for deals/tasks |
-| Sales | `sales@crm.local` | `Sales12345` | Own pipeline, own tasks, add/edit contacts, mobile workflow |
+**Admin**
+
+- Email: `admin@crm.local`
+- Password: `Admin12345`
+- Test: full workspace access, settings, and delete permissions.
+
+**Manager**
+
+- Email: `manager@crm.local`
+- Password: `Manager12345`
+- Test: team pipeline, team tasks, and manager delete for deals/tasks.
+
+**Sales**
+
+- Email: `sales@crm.local`
+- Password: `Sales12345`
+- Test: own pipeline, own tasks, add/edit contacts, and mobile workflow.
 
 ## Screenshots
 
 Add screenshots to `docs/screenshots/` using these filenames:
 
-| Screen | File |
-|---|---|
-| Dashboard analytics | `docs/screenshots/dashboard-desktop.png` |
-| Mobile navigation and notifications | `docs/screenshots/mobile-dashboard.png` |
-| Deal pipeline board | `docs/screenshots/deals-pipeline.png` |
-| Customer profile timeline | `docs/screenshots/customer-profile.png` |
+- Dashboard analytics: `docs/screenshots/dashboard-desktop.png`
+- Mobile navigation and notifications: `docs/screenshots/mobile-dashboard.png`
+- Deal pipeline board: `docs/screenshots/deals-pipeline.png`
+- Customer profile timeline: `docs/screenshots/customer-profile.png`
 
 ```md
 ![Dashboard analytics](docs/screenshots/dashboard-desktop.png)
@@ -42,16 +52,14 @@ SalesFlow CRM is not built on the Salesforce Platform directly. Instead, it is a
 
 Concept mapping:
 
-| SalesFlow CRM | Salesforce Concept |
-|---|---|
-| Customer | Account / Contact |
-| Deal | Opportunity |
-| Task | Salesforce Task |
-| Activity timeline | Activity history |
-| Backend automation events | Flow / Apex Trigger-style automation |
-| Manager approval flag | Approval Process concept |
-| Admin / Manager / Sales roles | Profile / Role / Permission Set / Sharing concept |
-| Dashboard analytics | Salesforce Reports / Dashboards |
+- `Customer` maps to Salesforce `Account` / `Contact`.
+- `Deal` maps to Salesforce `Opportunity`.
+- `Task` maps to Salesforce `Task`.
+- `Activity timeline` maps to Salesforce activity history.
+- Backend automation events map to Flow / Apex Trigger-style automation.
+- Manager approval flags map to Approval Process concepts.
+- Admin / Manager / Sales roles map to Profile, Role, Permission Set, and Sharing concepts.
+- Dashboard analytics maps to Salesforce Reports / Dashboards.
 
 This project helped me practice the same ideas that appear in Salesforce CRM: customer data, opportunity tracking, follow-up ownership, role-based visibility, and automation around business events.
 
@@ -106,11 +114,26 @@ Authentication:
 
 Authorization is enforced in the service layer, not only in the UI.
 
-| Role | Customers | Deals | Tasks | Settings |
-|---|---|---|---|---|
-| Admin | View/create/edit/delete all | View/create/edit/delete all | View/create/edit/delete all | Access |
-| Manager | View/create/edit team contacts | View/create/edit/delete team deals | View/create/edit/delete team tasks | No access |
-| Sales | View/add/edit related contacts, no delete | View/create/edit own deals, no delete | View/create/edit own tasks, mark done, no delete | No access |
+**Admin**
+
+- Customers: view, create, edit, and delete all.
+- Deals: view, create, edit, and delete all.
+- Tasks: view, create, edit, and delete all.
+- Settings: access allowed.
+
+**Manager**
+
+- Customers: view, create, and edit team contacts.
+- Deals: view, create, edit, and delete team deals.
+- Tasks: view, create, edit, and delete team tasks.
+- Settings: no access.
+
+**Sales**
+
+- Customers: view, add, and edit related contacts; no delete.
+- Deals: view, create, and edit own deals; no delete.
+- Tasks: view, create, edit own tasks, and mark done; no delete.
+- Settings: no access.
 
 Important implementation notes:
 
