@@ -37,23 +37,21 @@ Suggested demo path:
 
 ## Screenshots
 
-Screenshots should be placed in `docs/screenshots/`.
+Dashboard analytics:
 
-```text
-dashboard-desktop.png   Dashboard analytics
-mobile-dashboard.png    Mobile dashboard/navigation
-deals-pipeline.png      Deal pipeline board
-customer-profile.png    Customer profile timeline
-```
-
-Recommended markdown once images are added:
-
-```md
 ![Dashboard analytics](docs/screenshots/dashboard-desktop.png)
+
+Mobile dashboard:
+
 ![Mobile dashboard](docs/screenshots/mobile-dashboard.png)
+
+Deal pipeline:
+
 ![Deal pipeline](docs/screenshots/deals-pipeline.png)
+
+Customer profile:
+
 ![Customer profile](docs/screenshots/customer-profile.png)
-```
 
 ## Salesforce CRM Relevance
 
